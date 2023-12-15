@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fortress</title>
+</head>
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+    }
+
+    #fortress {
+        border: solid 1px;
+    }
+
+    .canvasContainer img {
+        height: 150px;
+        width: 150px;
+        cursor: pointer;
+    }
+
+    .canvasContainer h1 {
+        text-align: center;
+        font-size: 3em;
+    }
+
+    #hit {
+        width: 700px;
+        height: 700px;
+        cursor: pointer;
+    }
+
+    #main4 h1 {
+        position: absolute;
+        margin-left: -150px;
+        margin-top: -80px;
+        color: black;
+    }
+
+    #lose {
+        width: 700px;
+        height: 700px;
+        cursor: pointer;
+        margin-left: 120px;
+    }
+</style>
+
+<body>
+    <div class="canvasContainer" id="main1">
+        <h1>Choose the Shooter</h1>
+        <button onclick="drawOnCanvas(this.value)" id="shooter1" value="장민지님"><img src="./img/장민지님.PNG"></button>
+        <button onclick="drawOnCanvas(this.value)" id="shooter4" value="이정훈님"><img src="./img/이정훈님.png"></button>
+        <button onclick="drawOnCanvas(this.value)" id="shooter2" value="한현희님"><img src="./img/한현희님.PNG"></button>
+        <button onclick="drawOnCanvas(this.value)" id="shooter3" value="안젤리나님"><img src="./img/안젤리나님.png"></button>
+        <button onclick="drawOnCanvas(this.value)" id="shooter5" value="김혜원님"><img src="./img/김혜원님.png"></button>
+        <br><br>
+        <button onclick="drawOnCanvas(this.value)" id="shooter6" value="진소원님"><img src="./img/진소원님.png"></button>
+        <button onclick="drawOnCanvas(this.value)" id="shooter6" value="김영균"><img src="./img/김영균.png"></button>
+        <button onclick="drawOnCanvas(this.value)" id="shooter6" value="한예종님"><img src="./img/한예종님.png"></button>
+        <button onclick="drawOnCanvas(this.value)" id="shooter6" value="이윤지님"><img src="./img/이윤지님.png"></button>
+        <button onclick="drawOnCanvas(this.value)" id="shooter6" value="이소연님"><img src="./img/이소연님.png"></button>
+
+    </div>
+    <div class="canvasContainer" id="main2">
+        <h1>Choose the Target</h1>
+        <button onclick="startGame(this.value)" id="target1" value="장민지님"><img src="./img/장민지님.PNG"></button>
+        <button onclick="startGame(this.value)" id="target4" value="이정훈님"><img src="./img/이정훈님.png"></button>
+        <button onclick="startGame(this.value)" id="target2" value="한현희님"><img src="./img/한현희님.PNG"></button>
+        <button onclick="startGame(this.value)" id="target3" value="안젤리나님"><img src="./img/안젤리나님.png"></button>
+        <button onclick="startGame(this.value)" id="target5" value="김혜원님"><img src="./img/김혜원님.png"></button>
+        <br><br>
+        <button onclick="startGame(this.value)" id="target6" value="진소원님"><img src="./img/진소원님.png"></button>
+        <button onclick="startGame(this.value)" id="target6" value="김영균"><img src="./img/김영균.png"></button>
+        <button onclick="startGame(this.value)" id="target6" value="한예종님"><img src="./img/한예종님.png"></button>
+        <button onclick="startGame(this.value)" id="target6" value="이윤지님"><img src="./img/이윤지님.png"></button>
+        <button onclick="startGame(this.value)" id="target6" value="이소연님"><img src="./img/이소연님.png"></button>
+        <br><br>
+        <button onclick="startGame(this.value)" id="target6" value="pig"><img src="./img/pig.png"></button>
+
+    </div>
+    <div class="canvasContainer" id="main3">
+        <canvas id="fortress" width="1000" height="700">
+        </canvas>
+    </div>
+    <div class="canvasContainer" id="main4">
+        <h1>처음 화면으로 가시려면 그림을 클릭해주세요</h1>
+        <img id="bullet" src="/img/tan.png" style="display: none;" />
+        <img id="hit" onclick="reload()" src="./img/hit.gif" />
+    </div>
+    <div class="canvasContainer" id="main5">
+        <h1>처음 화면으로 가시려면 그림을 클릭해주세요</h1>
+        <img id="lose" onclick="reload()" src="./img/패배.jpg" />
+    </div>
+</body>
+
+</html>
+<script>
+    gameStart();
+    const canvas = document.getElementById("fortress");
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
+    const tankWidth = 90;
+    const tankHeight = 90;
+    let tankX = 0;
+    const tankDx = 3;
+    let tankLeftPressed = false;
+    let tankRightPressed = false;
+    let tankCenterX;
+    let tankCenterY;
+    let cannonAngle = Math.PI / 4;
+    const cannonAngleDIF = Math.PI / 100;
+    const cannonLength = tankWidth * Math.sqrt(2);
+    let targetWidth = Math.floor((Math.random() * 100) + 30); //거의 최소 37 최대 120
+    let targetHeight = Math.floor((Math.random() * 100) + 30); // 거의 최소 37 최대 100
+    let targetX = Math.floor(Math.random() * (500 - targetWidth) + 25); // 거의 최소 532.41
+    let targetY = Math.floor(Math.random() * (500 - targetHeight) + 150);
+    const pimg = new Image();
+    const timg = new Image();
+    const backgroundImage = new Image();
+    let missileRadius = 10; //미사일 반지름
+    let missileX; // 미사일 X좌표
+    let missileY; // 미사일 Y좌표
+    let isCharging = false; // 파워게이지 채우는 중인지 여부
+    let isFired = false; // 미사일이 발사 되었는지
+    let isHitted = false; // 목표물에 맞았는지
+    let gameOver = false; // 게임이 종료 되었는지
+    let powerGauge = Math.PI; // 파워 게이지
+    const powerGaugeDIF = Math.PI / 90; // 파워 게이지 차는 속도
+    const powerGaugeBarRadius = 30;
+    let missilePower; // 미사일 파워
+    let missileDx; //미사일 x방향 속도
+    let missileDy; //미사일 y방향 속도
+    const GRAVITY_ACCELERATION = 0.098;
+    let missilecnt = 0;
+    let hitTarget = 0;
+
+
+    function gameStart() {
+        var main1 = document.getElementById("main1");
+        var main2 = document.getElementById("main2");
+        var main3 = document.getElementById("main3");
+        var main4 = document.getElementById("main4");
+        var main5 = document.getElementById("main5");
+        main1.style.display = "block";
+        main2.style.display = "none";
+        main3.style.display = "none";
+        main4.style.display = "none";
+        main5.style.display = "none";
+    }
+
+    function drawOnCanvas(name) {
+        var main1 = document.getElementById("main1");
+        var main2 = document.getElementById("main2");
+        var main3 = document.getElementById("main3");
+        var main4 = document.getElementById("main4");
+        var main5 = document.getElementById("main5");
+        main1.style.display = "none";
+        main2.style.display = "block";
+        main3.style.display = "none";
+        main4.style.display = "none";
+        main5.style.display = "none";
+        pimg.src = "./img/" + name + ".png"
+    }
+    function startGame(name) {
+        var main1 = document.getElementById("main1");
+        var main2 = document.getElementById("main2");
+        var main3 = document.getElementById("main3");
+        var main4 = document.getElementById("main4");
+        var main5 = document.getElementById("main5");
+        main1.style.display = "none";
+        main2.style.display = "none";
+        main3.style.display = "block";
+        main4.style.display = "none";
+        main5.style.display = "none";
+
+        timg.src = "./img/" + name + ".png"
+    }
+    const drawHitTargetCount = () => {
+        ctx.font = "30px Arial";
+        ctx.fillStyle = "white";
+        ctx.fillText("Hits: " + hitTarget + "  Missile: " + (10 - missilecnt), 10, 30);
+
+    };
+    const draw = () => {
+        backgroundImage.src = "/img/jsa2.jpg";
+        backgroundImage.onload = () => {
+            ctx.drawImage(backgroundImage, 0, 0, width, height);
+            tankCenterX = tankX + 0.5 * tankWidth;
+            tankCenterY = height - 0.9 * tankHeight;
+            if (tankLeftPressed && tankX > 0) {
+                tankX -= tankDx;
+            }
+            if (tankRightPressed && tankX + tankWidth < (width - 800)) {
+                tankX += tankDx;
+            }
+            if (isCharging && !isFired) {
+                if (powerGauge < Math.PI * 2) {
+                    powerGauge += powerGaugeDIF;
+                }
+                drawPowerGauge();
+            }
+            if (!isFired) {
+                missileX = tankCenterX + (cannonLength - 30) * Math.cos(cannonAngle);
+                missileY = tankCenterY - (cannonLength - 30) * Math.sin(cannonAngle);
+            } else {
+                missileDy -= GRAVITY_ACCELERATION;
+                missileX = missileX + missileDx;
+                missileY = missileY - missileDy;
+            }
+            drawTank();
+            checkMissile();
+            if (!isHitted) {
+                drawTarget();
+            }
+            drawMissile();
+            drawHitTargetCount();
+        }
+
+
+    };
+    const checkMissile = () => {
+        // 미사일이 벽에 닫으면
+        if (missileX <= 0 || missileX >= width || missileY >= height) {
+            isFired = false;
+            if (missilecnt == 10) {
+                endGame(false);
+            }
+        }
+        // 미사일 명중
+        if (missileX >= targetX && missileX <= targetX + targetWidth && missileY >= targetY && missileY <= targetY + targetHeight) {
+            isFired = false;
+            isHitted = true;
+            console.log("맞음");
+            hitTarget++;
+            resetTarget();
+            if (hitTarget >= 6) {
+                endGame(true);
+
+            }
+
+        }
+    }
+    const resetTarget = () => {
+        targetWidth = Math.floor((Math.random() * 100) + 30);
+        targetHeight = Math.floor((Math.random() * 100) + 30);
+        targetX = Math.floor(Math.random() * (500 - targetWidth) + 500);
+        targetY = Math.floor(Math.random() * (500 - targetHeight) + 150);
+        isHitted = false;
+
+    }
+    const drawPowerGauge = () => {
+        ctx.beginPath();
+        ctx.arc(tankCenterX, tankCenterY - cannonLength, powerGaugeBarRadius, Math.PI, powerGauge, false);
+        ctx.stroke();
+        ctx.strokeStyle = "white"
+
+    }
+    const drawTank = () => {
+        ctx.lineWidth = 10;
+        ctx.lFineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(tankCenterX, tankCenterY);
+        ctx.lineTo(
+            tankCenterX + (cannonLength - 30) * Math.cos(cannonAngle),
+            tankCenterY - (cannonLength - 30) * Math.sin(cannonAngle)
+        );
+        ctx.stroke();
+        ctx.closePath();
+        ctx.drawImage(pimg, tankX, height - tankHeight, tankWidth, tankHeight);
+    };
+    const drawTarget = () => {
+        ctx.drawImage(timg, targetX, targetY, targetWidth, targetHeight);
+        /*ctx.fillStyle = ctx.createPattern(img,'repeat')
+        ctx.fillRect(targetX,targetY,targetWidth,targetHeight);*/
+
+    };
+    const drawMissile = () => {
+        ctx.beginPath();
+        ctx.drawImage(bullet, missileX - missileRadius, missileY - missileRadius, missileRadius * 2, missileRadius * 2);
+        ctx.fill();
+        ctx.closePath();
+    };
+    const endGame = (win) => {
+        if (!win) {
+            alert("모든 미사일을 소모했습니다. 실패!")
+            main3.style.display = "none";
+            var main5 = document.getElementById("main5");
+            main5.style.display = "block";
+
+        } else {
+            alert("적을 해치웠습니다. 성공!")
+            main3.style.display = "none";
+            var main4 = document.getElementById("main4");
+            main4.style.display = "block";
+        }
+    };
+    function reload() {
+        location.reload();
+    };
+
+    draw();
+
+
+    const keydownHandler = event => {
+        if (event.keyCode === 37) {
+            tankLeftPressed = true;
+        } else if (event.keyCode === 39) {
+            tankRightPressed = true;
+        } else if (event.keyCode === 38 && cannonAngle <= Math.PI) {
+            cannonAngle = cannonAngle + cannonAngleDIF
+        } else if (event.keyCode === 40 && cannonAngle >= 0) {
+            cannonAngle = cannonAngle - cannonAngleDIF;
+        } else if (event.keyCode === 32 && !isFired) {
+            isCharging = true;
+        }
+    }
+    const keyupHandler = event => {
+        if (event.keyCode === 37) {
+            tankLeftPressed = false;
+        } else if (event.keyCode === 39) {
+            tankRightPressed = false;
+        } else if (event.keyCode === 32 && !isFired) {
+            isCharging = false;
+            isFired = true;
+            missilePower = powerGauge * 1.73;
+            missileDx = missilePower * Math.cos(cannonAngle);
+            missileDy = missilePower * Math.sin(cannonAngle);
+            powerGauge = Math.PI;
+            missilecnt++;
+        }
+
+    }
+
+    const start = setInterval(draw, 10);
+    document.addEventListener("keydown", keydownHandler, false);
+    document.addEventListener("keyup", keyupHandler, false);
+
+</script>
