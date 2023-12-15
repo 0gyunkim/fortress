@@ -55,9 +55,9 @@
 <body>
     <div class="canvasContainer" id="main1">
         <h1>Choose the Shooter</h1>
-        <button onclick="drawOnCanvas(this.value)" id="shooter1" value="장민지님"><img src="./img/장민지님.png"></button>
+        <button onclick="drawOnCanvas(this.value)" id="shooter1" value="장민지님"><img src="./img/장민지님.PNG"></button>
         <button onclick="drawOnCanvas(this.value)" id="shooter4" value="이정훈님"><img src="./img/이정훈님.png"></button>
-        <button onclick="drawOnCanvas(this.value)" id="shooter2" value="한현희님"><img src="./img/한현희님.png"></button>
+        <button onclick="drawOnCanvas(this.value)" id="shooter2" value="한현희님"><img src="./img/한현희님.PNG"></button>
         <button onclick="drawOnCanvas(this.value)" id="shooter3" value="안젤리나님"><img src="./img/안젤리나님.png"></button>
         <button onclick="drawOnCanvas(this.value)" id="shooter5" value="김혜원님"><img src="./img/김혜원님.png"></button>
         <br><br>
@@ -70,9 +70,9 @@
     </div>
     <div class="canvasContainer" id="main2">
         <h1>Choose the Target</h1>
-        <button onclick="startGame(this.value)" id="target1" value="장민지님"><img src="./img/장민지님.png"></button>
+        <button onclick="startGame(this.value)" id="target1" value="장민지님"><img src="./img/장민지님.PNG"></button>
         <button onclick="startGame(this.value)" id="target4" value="이정훈님"><img src="./img/이정훈님.png"></button>
-        <button onclick="startGame(this.value)" id="target2" value="한현희님"><img src="./img/한현희님.png"></button>
+        <button onclick="startGame(this.value)" id="target2" value="한현희님"><img src="./img/한현희님.PNG"></button>
         <button onclick="startGame(this.value)" id="target3" value="안젤리나님"><img src="./img/안젤리나님.png"></button>
         <button onclick="startGame(this.value)" id="target5" value="김혜원님"><img src="./img/김혜원님.png"></button>
         <br><br>
@@ -110,16 +110,19 @@
     const tankWidth = 90;
     const tankHeight = 90;
     let tankX = 0;
+    let tankY = 610;
     const tankDx = 3;
     let tankLeftPressed = false;
     let tankRightPressed = false;
+    let tankUpPressed = false;
+    let tankDownPressed = false;
     let tankCenterX;
     let tankCenterY;
     let cannonAngle = Math.PI / 4;
     const cannonAngleDIF = Math.PI / 100;
     const cannonLength = tankWidth * Math.sqrt(2);
-    let targetWidth = Math.floor((Math.random() * 100) + 30); //거의 최소 37 최대 120
-    let targetHeight = Math.floor((Math.random() * 100) + 30); // 거의 최소 37 최대 100
+    let targetWidth = Math.floor((Math.random() * 50) + 30); //거의 최소 37 최대 120
+    let targetHeight = Math.floor((Math.random() * 50) + 30); // 거의 최소 37 최대 100
     let targetX = Math.floor(Math.random() * (500 - targetWidth) + 25); // 거의 최소 532.41
     let targetY = Math.floor(Math.random() * (500 - targetHeight) + 150);
     const pimg = new Image();
@@ -194,12 +197,18 @@
         backgroundImage.onload = () => {
             ctx.drawImage(backgroundImage, 0, 0, width, height);
             tankCenterX = tankX + 0.5 * tankWidth;
-            tankCenterY = height - 0.9 * tankHeight;
+            tankCenterY = tankY - 0.01 * tankHeight;
             if (tankLeftPressed && tankX > 0) {
                 tankX -= tankDx;
             }
-            if (tankRightPressed && tankX + tankWidth < (width - 700)) {
+            if (tankRightPressed && tankX + tankWidth < (width - 800)) {
                 tankX += tankDx;
+            }
+            if (tankUpPressed && tankY > 500) {
+                tankY -= tankDx;
+            }
+            if (tankDownPressed && tankY <= 600) {
+                tankY += tankDx;
             }
             if (isCharging && !isFired) {
                 if (powerGauge < Math.PI * 2) {
@@ -235,7 +244,6 @@
                 endGame(false);
             }
         }
-        
         // 미사일 명중
         if (missileX >= targetX && missileX <= targetX + targetWidth && missileY >= targetY && missileY <= targetY + targetHeight) {
             isFired = false;
@@ -245,16 +253,16 @@
             resetTarget();
             if (hitTarget >= 6) {
                 endGame(true);
-            }else if(missilecnt >=10){
+            } else if (missilecnt >= 10) {
                 endGame(false)
             }
+
+
         }
-
-
     }
     const resetTarget = () => {
-        targetWidth = Math.floor((Math.random() * 100) + 30);
-        targetHeight = Math.floor((Math.random() * 100) + 30);
+        targetWidth = Math.floor((Math.random() * 50) + 30);
+        targetHeight = Math.floor((Math.random() * 50) + 30);
         targetX = Math.floor(Math.random() * (500 - targetWidth) + 500);
         targetY = Math.floor(Math.random() * (500 - targetHeight) + 150);
         isHitted = false;
@@ -278,7 +286,7 @@
         );
         ctx.stroke();
         ctx.closePath();
-        ctx.drawImage(pimg, tankX, height - tankHeight, tankWidth, tankHeight);
+        ctx.drawImage(pimg, tankX, tankY, tankWidth, tankHeight);
     };
     const drawTarget = () => {
         ctx.drawImage(timg, targetX, targetY, targetWidth, targetHeight);
@@ -314,28 +322,46 @@
 
 
     const keydownHandler = event => {
-        if (event.keyCode === 37) {
+        if (event.keyCode === 65) {
             tankLeftPressed = true;
-        } else if (event.keyCode === 39) {
+        } else if (event.keyCode === 68) {
             tankRightPressed = true;
-        } else if (event.keyCode === 38 && cannonAngle <= Math.PI) {
+        } else if (event.keyCode === 87) {
+            tankUpPressed = true;
+        } else if (event.keyCode === 83) {
+            tankDownPressed = true;
+        } else if (event.keyCode === 38 && cannonAngle <= 1.87) {
             cannonAngle = cannonAngle + cannonAngleDIF
-        } else if (event.keyCode === 40 && cannonAngle >= 0) {
+        } else if (event.keyCode === 40 && cannonAngle >= 0.78) {
             cannonAngle = cannonAngle - cannonAngleDIF;
         } else if (event.keyCode === 32 && !isFired) {
             isCharging = true;
         }
     }
     const keyupHandler = event => {
-        if (event.keyCode === 37) {
+        if (event.keyCode === 65) {
             tankLeftPressed = false;
-        } else if (event.keyCode === 39) {
+        } else if (event.keyCode === 68) {
             tankRightPressed = false;
+        } else if (event.keyCode === 87) {
+            tankUpPressed = false;
+        } else if (event.keyCode === 83) {
+            tankDownPressed = false;
         } else if (event.keyCode === 32 && !isFired) {
             isCharging = false;
             isFired = true;
-            missilePower = powerGauge * 1.65;
-            missileDx = missilePower * Math.cos(cannonAngle);
+            missilePower = powerGauge * 1.45;
+            if (missilePower < 6) {
+                missileDx = missilePower * 0.7 * Math.cos(cannonAngle);
+                missileDy = missilePower * 0.7 * Math.sin(cannonAngle);
+
+            } else if (missilePower > 6 && missilePower < 8.5) {
+                missileDx = missilePower * Math.cos(cannonAngle);
+                missileDy = missilePower * Math.sin(cannonAngle);
+            } else {
+                missileDx = missilePower * 1.3 * Math.cos(cannonAngle);
+                missileDy = missilePower * 1.3 * Math.sin(cannonAngle);
+            }
             missileDy = missilePower * Math.sin(cannonAngle);
             powerGauge = Math.PI;
             missilecnt++;
@@ -346,5 +372,9 @@
     const start = setInterval(draw, 10);
     document.addEventListener("keydown", keydownHandler, false);
     document.addEventListener("keyup", keyupHandler, false);
+
+
+
+
 
 </script>
